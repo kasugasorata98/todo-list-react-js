@@ -1,15 +1,25 @@
 import Constants from "./utils/Constants";
-import React, { useState } from 'react';
-import { Button, Typography, TextField, DialogTitle, DialogContent, DialogActions, Grid, Alert, Snackbar } from "@mui/material";
-import AddIcon from '@mui/icons-material/Add';
-import Dialog from '@mui/material/Dialog';
-import '@fontsource/roboto/300.css';
-import '@fontsource/roboto/400.css';
-import '@fontsource/roboto/500.css';
-import '@fontsource/roboto/700.css';
+import React, { useState } from "react";
+import {
+  Button,
+  Typography,
+  TextField,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Grid,
+  Alert,
+  Snackbar,
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import Dialog from "@mui/material/Dialog";
+import "@fontsource/roboto/300.css";
+import "@fontsource/roboto/400.css";
+import "@fontsource/roboto/500.css";
+import "@fontsource/roboto/700.css";
 import Task from "./components/task";
-import Web3 from 'web3';
-import TodoList from './contract/TodoList.json';
+import Web3 from "web3";
+import TodoList from "./contract/TodoList.json";
 
 function App() {
   const [account, setAccount] = useState(null);
@@ -20,20 +30,24 @@ function App() {
   const [networkId, setNetworkId] = useState(null);
   const [contract, setContract] = useState(null);
   const [tasks, setTasks] = useState([]);
-  const [taskDescription, setTaskDescription] = useState('');
+  const [taskDescription, setTaskDescription] = useState("");
   const [connectToWalletAlert, setConnectToWalletAlert] = useState(false);
 
+  console.log("test");
+
   function addTask() {
-    if (taskDescription === '') {
+    if (taskDescription === "") {
       setConnectToWalletAlert(true);
     }
-    contract.methods.createTask(taskDescription).send({ from: account })
-      .then(tx => {
+    contract.methods
+      .createTask(taskDescription)
+      .send({ from: account })
+      .then((tx) => {
         console.log(tx);
         setDialog(false);
         getLatestTask(tx.events.TaskEvent.returnValues.id);
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err);
       });
   }
@@ -41,13 +55,14 @@ function App() {
   function loadWeb3() {
     window.ethereum.enable();
     let provider = window.ethereum;
-    if (typeof provider !== 'undefined') {
-      provider.request({ method: 'eth_requestAccounts' })
+    if (typeof provider !== "undefined") {
+      provider
+        .request({ method: "eth_requestAccounts" })
         .then((accounts) => {
           setAccount(accounts[0]);
           console.log("Set account: " + accounts[0]);
           if (!hasAccountsListenerSet) {
-            window.ethereum.on('accountsChanged', function (accounts) {
+            window.ethereum.on("accountsChanged", function (accounts) {
               setAccount(accounts[0]);
               setTasks([]);
               console.log("Set account: " + accounts[0]);
@@ -58,7 +73,7 @@ function App() {
           setConnectToWalletAlert(false);
           return accounts[0];
         })
-        .catch(err => {
+        .catch((err) => {
           console.log(err);
         })
         .then(async (account) => {
@@ -79,21 +94,23 @@ function App() {
             //     console.log(event);
             //   });
             setContract(contract);
-            const count = await contract.methods.counters(String(account)).call();
+            const count = await contract.methods
+              .counters(String(account))
+              .call();
             for (let i = 1; i <= count; i++) {
-              const res = await contract.methods.tasks(String(account), i).call();
-              if (!res.isDeleted)
-                setTasks(prevTasks => [...prevTasks, res]);
+              const res = await contract.methods
+                .tasks(String(account), i)
+                .call();
+              if (!res.isDeleted) setTasks((prevTasks) => [...prevTasks, res]);
             }
-          }
-          catch (err) {
+          } catch (err) {
             console.log(err);
           }
-        }).catch(err => {
+        })
+        .catch((err) => {
           console.log(err);
         });
-    }
-    else {
+    } else {
       setMetaMask(false);
     }
   }
@@ -101,47 +118,52 @@ function App() {
   async function getLatestTask(id) {
     try {
       const res = await contract.methods.tasks(account, id).call();
-      setTasks(prevTasks => [...prevTasks, res]);
-    }
-    catch (err) {
+      setTasks((prevTasks) => [...prevTasks, res]);
+    } catch (err) {
       console.log(err);
     }
   }
 
   return (
-    <Grid container sx={{
-      display: 'flex',
-      flexDirection: 'row',
-      justifyContent: 'center',
-      paddingTop: 5
-    }}>
+    <Grid
+      container
+      sx={{
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "center",
+        paddingTop: 5,
+      }}
+    >
       <Snackbar open={!hasMetaMask}>
-        <Alert severity="error" sx={{ width: '100%' }}>
+        <Alert severity="error" sx={{ width: "100%" }}>
           Please install MetaMask then refresh to connect
         </Alert>
       </Snackbar>
       <Snackbar open={connectToWalletAlert}>
-        <Alert severity="error" sx={{ width: '100%' }}>
+        <Alert severity="error" sx={{ width: "100%" }}>
           Please connect to wallet first
         </Alert>
       </Snackbar>
       <Grid
         sx={(theme) => ({
-          width: '40%',
-          [theme.breakpoints.down('sm')]: {
-            width: '80%',
+          width: "40%",
+          [theme.breakpoints.down("sm")]: {
+            width: "80%",
           },
-          display: 'flex',
-          flexDirection: 'column'
+          display: "flex",
+          flexDirection: "column",
         })}
       >
-        <Typography variant="h5" sx={{
-          color: 'white',
-          alignSelf: 'center',
-          fontWeight: '500',
-          fontFamily: 'cursive',
-          marginBottom: 1
-        }}>
+        <Typography
+          variant="h5"
+          sx={{
+            color: "white",
+            alignSelf: "center",
+            fontWeight: "500",
+            fontFamily: "cursive",
+            marginBottom: 1,
+          }}
+        >
           To-do DApp
         </Typography>
         <Button
@@ -149,27 +171,29 @@ function App() {
             if (account) {
               setAccount(null);
               setTasks([]);
-            }
-            else
-              loadWeb3();
+            } else loadWeb3();
           }}
           variant="outlined"
           sx={(theme) => ({
             color: Constants.colors.pink,
             borderColor: Constants.colors.pink,
-            textTransform: 'none',
+            textTransform: "none",
             borderWidth: 2,
-            '&:hover': {
-              borderColor: Constants.colors.pink
+            "&:hover": {
+              borderColor: Constants.colors.pink,
             },
-          })}>{account ? 'Disconnect Wallet' : 'Connect Wallet'}</Button>
-        <Typography variant="h5"
+          })}
+        >
+          {account ? "Disconnect Wallet" : "Connect Wallet"}
+        </Button>
+        <Typography
+          variant="h5"
           sx={(theme) => ({
-            color: 'white',
-            alignSelf: 'center',
-            fontWeight: '500',
-            fontFamily: 'cursive',
-            [theme.breakpoints.down('sm')]: {
+            color: "white",
+            alignSelf: "center",
+            fontWeight: "500",
+            fontFamily: "cursive",
+            [theme.breakpoints.down("sm")]: {
               fontSize: 15,
             },
           })}
@@ -179,24 +203,28 @@ function App() {
         <Button
           sx={(theme) => ({
             borderColor: Constants.colors.lighter_theme,
-            color: 'white',
+            color: "white",
             borderWidth: 2,
-            '&:hover': {
-              borderColor: Constants.colors.pink
+            "&:hover": {
+              borderColor: Constants.colors.pink,
             },
             marginTop: 2,
             borderRadius: 10,
-            textTransform: 'none',
+            textTransform: "none",
           })}
           variant="outlined"
           disableElevation
           onClick={() => setDialog(!isDialogOpen)}
-          startIcon={<AddIcon sx={{ color: Constants.colors.pink }} />}>
-          <Typography variant="h7" sx={{
-            color: 'white',
-            alignSelf: 'center',
-            fontFamily: 'cursive'
-          }}>
+          startIcon={<AddIcon sx={{ color: Constants.colors.pink }} />}
+        >
+          <Typography
+            variant="h7"
+            sx={{
+              color: "white",
+              alignSelf: "center",
+              fontFamily: "cursive",
+            }}
+          >
             Add a task
           </Typography>
         </Button>
@@ -204,76 +232,87 @@ function App() {
           open={isDialogOpen}
           onClose={() => {
             setDialog(!isDialogOpen);
-            setTaskDescription('');
+            setTaskDescription("");
           }}
         >
           <DialogTitle
             sx={{
-              fontFamily: 'cursive',
-              fontSize: 18
-            }}>{"What is the task?"}</DialogTitle>
+              fontFamily: "cursive",
+              fontSize: 18,
+            }}
+          >
+            {"What is the task?"}
+          </DialogTitle>
           <DialogContent>
             <TextField
               sx={{
-                display: 'flex',
+                display: "flex",
               }}
               onChange={(e) => setTaskDescription(e.target.value)}
               multiline={true}
               variant="filled"
-              label="Task" />
+              label="Task"
+            />
           </DialogContent>
           <DialogActions>
             <Button
               sx={{
-                fontFamily: 'cursive',
-                fontSize: 14
+                fontFamily: "cursive",
+                fontSize: 14,
               }}
               onClick={() => {
                 setDialog(!isDialogOpen);
-                setTaskDescription('');
+                setTaskDescription("");
               }}
-              color="error">Cancel</Button>
+              color="error"
+            >
+              Cancel
+            </Button>
             <Button
               sx={{
-                fontFamily: 'cursive',
-                fontSize: 14
+                fontFamily: "cursive",
+                fontSize: 14,
               }}
-              onClick={() => addTask()} color="info">Confirm</Button>
+              onClick={() => addTask()}
+              color="info"
+            >
+              Confirm
+            </Button>
           </DialogActions>
         </Dialog>
-        <Typography variant="h7" sx={{
-          color: 'white',
-          alignSelf: 'flex-start',
-          fontFamily: 'cursive',
-          marginTop: 2,
-          textDecoration: 'underline',
-          marginBottom: 1
-        }}>
+        <Typography
+          variant="h7"
+          sx={{
+            color: "white",
+            alignSelf: "flex-start",
+            fontFamily: "cursive",
+            marginTop: 2,
+            textDecoration: "underline",
+            marginBottom: 1,
+          }}
+        >
           {`Tasks(${tasks.length})`}
         </Typography>
-        {
-          tasks.map(task => {
-            if (!task.isDeleted) {
-              return (
-                <Task
-                  key={task.id}
-                  id={task.id}
-                  description={task.description}
-                  isChecked={task.isChecked}
-                  isDeleted={task.isDeleted}
-                  timestamp={task.timestamp}
-                  contract={contract}
-                  account={account}
-                />
-              );
-            }
-            else {
-              return 0;
-            }
-          })
-        }
+        {tasks.map((task) => {
+          if (!task.isDeleted) {
+            return (
+              <Task
+                key={task.id}
+                id={task.id}
+                description={task.description}
+                isChecked={task.isChecked}
+                isDeleted={task.isDeleted}
+                timestamp={task.timestamp}
+                contract={contract}
+                account={account}
+              />
+            );
+          } else {
+            return 0;
+          }
+        })}
       </Grid>
-    </Grid >
+    </Grid>
   );
 }
 
